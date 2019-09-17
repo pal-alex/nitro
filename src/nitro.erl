@@ -62,7 +62,8 @@ to_binary(A) when is_atom(A) -> atom_to_binary(A,latin1);
 to_binary(B) when is_binary(B) -> B;
 to_binary(I) when is_integer(I) -> to_binary(integer_to_list(I));
 to_binary(F) when is_float(F) -> float_to_binary(F,[{decimals,9},compact]);
-to_binary(L) when is_list(L) ->  iolist_to_binary(L).
+to_binary(L) when is_list(L) -> L1 = lists:flatten(L),
+                                iolist_to_binary(L1).
 
 -ifndef(PICKLER).
 -define(PICKLER, (application:get_env(n2o,pickler,nitro_pickle))).

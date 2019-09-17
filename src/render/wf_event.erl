@@ -22,7 +22,28 @@ new(Postback, Element, Delegate, Name, Data, Source, Validation) ->
     Join=fun([]) -> [];
            ([E]) -> [$'|E]++[$'];
          ([H|T]) -> [[$'|H]++[$']] ++ [ [$,,$'|E]++[$'] || E <- T ] end,
-    Event = #ev{name=Name, module=Module, msg=Postback, trigger=Element},
-    list_to_binary(["{ if (validateSources([",Join([ nitro:to_list(S) || S <- Source, S =/= []]),
-        "])) { ",?B(Validation)," ws.send(enc(tuple(atom('",?B(application:get_env(n2o,event,pickle)),"'),bin('",
-        Element,"'),bin('",nitro:pickle(Event),"'),",Data,"))); } else console.log('Validation Error'); }"]).
+    Event = #ev{name=Name, module=Module, msg=Postback, trigger=Element}, 
+    ValidateSources = Join([ nitro:to_list(S) || S <- Source, S =/= [] andalso is_tuple(S) == false ]),
+    list_to_binary(["{ if (validateSources([", ValidateSources, "])) 
+      { ",?B(Validation)," m = enc(tuple(atom('",?B(application:get_env(n2o,event,pickle)),"'),
+                                        bin('", Element, "'),
+                                        bin('", nitro:pickle(Event), "'),
+                                        ", Data, "));
+                           ws.send(m); } 
+                      else console.log('Validation Error'); }"]).
+
+
+  % new(Postback, Element, Delegate, Name, Data, Source, Validation) ->
+  %     Module = nitro:coalesce([Delegate, ?CTX#cx.module]),
+  %     Join=fun([]) -> [];
+  %             ([E]) -> [$'|E]++[$'];
+  %           ([H|T]) -> [[$'|H]++[$']] ++ [ [$,,$'|E]++[$'] || E <- T ] end,
+  %     Event = #ev{name=Name, module=Module, msg=Postback, trigger=Element}, 
+  %     ValidateSources = Join([ nitro:to_list(S) || S <- Source, S =/= [] andalso is_tuple(S) == false ]),
+  %     list_to_binary(["{ if (validateSources([", ValidateSources, "])) 
+  %       { ",?B(Validation)," m = enc(tuple(atom('",?B(application:get_env(n2o,event,pickle)),"'),
+  %                                         bin('", Element, "'),
+  %                                         bin('", nitro:pickle(Event), "'), 
+  %                                         ", Data, "));
+  %                             ws.send(m); } 
+  %                       else console.log('Validation Error'); }"]).
