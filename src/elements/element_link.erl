@@ -23,7 +23,7 @@ render_element(Record) ->
       {<<"draggable">>, case Record#link.draggable of true -> "true"; false -> "false"; _ -> [] end},
       {<<"dropzone">>, Record#link.dropzone},
       {<<"hidden">>, case Record#link.hidden of "hidden" -> "hidden"; _ -> [] end},
-      {<<"id">>, Id},
+      {<<"id">>, nitro_conv:to_binary(Id)},
       {<<"lang">>, Record#link.lang},
       {<<"spellcheck">>, case Record#link.spellcheck of true -> "true"; false -> "false"; _ -> [] end},
       {<<"style">>, Record#link.style},

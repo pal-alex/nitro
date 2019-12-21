@@ -77,7 +77,12 @@
 -record(checkbox,           {?ELEMENT_BASE(element_checkbox),  autofocus, checked=false, disabled, form, name, required, value}).
 -record(color,           {?ELEMENT_BASE(element_color),  autocomplete, autofocus, disabled, form, list, name, value}).
 -record(date,           {?ELEMENT_BASE(element_date),  autocomplete, autofocus, disabled, form, list, max, min, name, step, readonly, required, value}).
--record(calendar,       {?ELEMENT_BASE(element_calendar),  autocomplete, autofocus, disabled, form, list, maxDate, minDate, format, pattern, name, step, readonly, required, value, placeholder, onSelect, disableDayFn, position,reposition,yearRange=100}).
+% -record(calendar,       {?ELEMENT_BASE(element_calendar),  autocomplete, autofocus, disabled, form, list, maxDate, minDate, format, pattern, name, step, readonly, required, value, placeholder, onSelect, disableDayFn, position,reposition,yearRange=100}).
+-record(calendar, {?ELEMENT_BASE(element_calendar),
+  autocomplete=true, autofocus=false, disabled=false, form=[], list=[], maxDate={2019,2,2},
+    minDate, format="YYYY-MM-DD", pattern=[], name=[], step=[], readonly=[], required=[],
+    value={2020,2,2}, placeholder=[], onSelect=[], disableDayFn=[], position=[],
+    reposition=[], yearRange=100}).
 -record(datetime,           {?ELEMENT_BASE(element_datetime),  autocomplete, autofocus, disabled, form, list, max, min, name, step, readonly, required, value}).
 -record(datetime_local,           {?ELEMENT_BASE(element_datetime_local),  autocomplete, autofocus, disabled, form, list, max, min, name, step, readonly, required, value}).
 -record(email,           {?ELEMENT_BASE(element_email),  autocomplete, autofocus, disabled, form, list, maxlength, multiple, name, pattern, placeholder, readonly, required, size, value}).
@@ -97,6 +102,17 @@
 -record(input_time,              {?ELEMENT_BASE(element_input_time),  autocomplete, autofocus, disabled, form, list, max, min, name, step, readonly, required, value}).
 -record(url,              {?ELEMENT_BASE(element_url),  autocomplete, autofocus, disabled, form, list, maxlength, name, pattern, placeholder, readonly, required, size, value}).
 -record(week,              {?ELEMENT_BASE(element_week),  autocomplete, autofocus, disabled, form, list, max, min, name, readonly, required, step, value}).
+
+% comboLookup
+-record(comboKeyup,  { value=[], dom=[], feed=[], delegate=[]}).
+-record(comboSelect,  { value=[], dom=[], feed=[], delegate=[] }).
+-record(comboNext,   { pos=[],  count=[], feed=[]}).
+-record(comboLookup, { ?ELEMENT_BASE(element_comboLookup),
+    value=[],
+    disabled=false,
+    feed=[],
+    reader=[],
+    chunk=20 }).
 
 % HTML Interactive
 -record(command,       {?ELEMENT_BASE(element_command),  checked, disabled, icon, label, radiogroup, type= <<"command">>}).

@@ -26,6 +26,7 @@ coalesce([[]|T]) -> coalesce(T);
 coalesce([H|_]) -> H.
 
 jse(X) -> js_escape(X).
+hte(X) -> nitro_conv:html_encode(X).
 
 js_escape(undefined) -> [];
 js_escape(Value) when is_list(Value) -> binary_to_list(js_escape(iolist_to_binary(Value)));
@@ -50,7 +51,9 @@ inner_to_list(B) when is_binary(B) -> binary_to_list(B);
 inner_to_list(I) when is_integer(I) -> integer_to_list(I);
 inner_to_list(L) when is_tuple(L) -> lists:flatten(io_lib:format("~p", [L]));
 inner_to_list(L) when is_list(L) -> L;
+inner_to_list(F) when is_function(F) -> lists:flatten(io_lib:format("~p", [F]));
 inner_to_list(F) when is_float(F) -> float_to_list(F,[{decimals,9},compact]).
+
 
 to_atom(A) when is_atom(A) -> A;
 to_atom(B) when is_binary(B) -> to_atom(binary_to_list(B));
@@ -63,7 +66,8 @@ to_binary(B) when is_binary(B) -> B;
 to_binary(I) when is_integer(I) -> to_binary(integer_to_list(I));
 to_binary(F) when is_float(F) -> float_to_binary(F,[{decimals,9},compact]);
 to_binary(L) when is_list(L) -> L1 = lists:flatten(L),
-                                iolist_to_binary(L1).
+                                iolist_to_binary(L1);
+to_binary(X) when is_tuple(X) ->  term_to_binary(X).
 
 -ifndef(PICKLER).
 -define(PICKLER, (application:get_env(n2o,pickler,nitro_pickle))).
@@ -182,10 +186,16 @@ redirect(Url) -> nitro:wire(#jq{target='window.top',property=location,args=simpl
 %header(K,V) -> nitro:context((?CTX)#cx{req=cowboy_req:set_resp_header(K,V,?CTX#cx.req)}).
 
 % Convert and Utils API
+setAttr(Element, Attr, Value) -> 
+    nitro:wire("{ var x = qi('"++ 
+    nitro:to_list(Element)++"'); if (x) x.setAttribute('"++nitro:to_list(Attr)++"', '"++nitro:to_list(Value)++"'); }").
 
-display(Element,Status) ->
-   nitro:wire("{ var x = qi('"++
-   nitro:to_list(Element)++"'); if (x) x.style.display = '"++nitro:to_list(Status)++"'; }").
+style(Element, Style) -> setAttr(Element, "style", Style).
+style(Element, Style, Value) -> 
+            nitro:wire("{ var x = qi('"++ 
+                nitro:to_list(Element)++"'); if (x) x.style."++nitro:to_list(Style)++" = '"++nitro:to_list(Value)++"'; }").
+
+display(Element,Status) -> style(Element, "display", Status).
 
 show(Element) -> display(Element,block).
 hide(Element) -> display(Element,none).
@@ -193,11 +203,12 @@ hide(Element) -> display(Element,none).
 compact([]) -> "[]";
 compact("\n") -> "[]";
 compact([X|_]=Y) when is_tuple(X) -> [ compact(F) || F <- Y ];
+compact(Tuple) when is_binary(Tuple) -> unicode:characters_to_binary(Tuple);
 compact(Tuple) when is_tuple(Tuple) ->
-     Min = erlang:min(9,size(Tuple)),
+     Min = erlang:min(11,size(Tuple)),
      Fields = lists:zip(lists:seq(1,Min),lists:sublist(tuple_to_list(Tuple),1,Min)),
      "{" ++ string:join([ io_lib:format("~s",[compact(F)]) || {_,F}<- Fields ],",") ++ "}";
-compact(Tuple) -> nitro:to_list(Tuple).
+compact(Tuple) -> nitro:jse(nitro:to_list(Tuple)).
 
 meg(X) -> integer_to_list(X div 1000000) ++ "M".
 rev(X) -> lists:reverse(X).
