@@ -1,5 +1,4 @@
 -module(element_calendar).
--author('G-Grand').
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -export([render_element/1]).
@@ -45,30 +44,35 @@ render_element(Record) ->
       {<<"required">>,if Record#calendar.required == true -> "required"; true -> [] end},
       {<<"step">>,Record#calendar.step},
       {<<"type">>, <<"calendar">>},
+      {<<"value">>, case Record#calendar.value of {Yv,Mv,Dv} -> io_lib:format("~4..0B-~2..0B-~2..0B",[Yv,Mv,Dv]); [] -> []; _ -> [] end},
       {<<"pattern">>,Record#calendar.pattern},
       {<<"placeholder">>,Record#calendar.placeholder},
       {<<"onkeypress">>, Record#calendar.onkeypress} | Record#calendar.data_fields
     ],
     wf_tags:emit_tag(<<"input">>, nitro:render(Record#calendar.body), List).
 
-init(Id,#calendar{minDate=Min,maxDate=Max,lang=Lang,format=Form,value=Value,onSelect=SelectFn,disableDayFn=DisDayFn, position=Pos,reposition=Repos,yearRange=YearRange}) ->
+init(Id,#calendar{minDate=Min,maxDate=Max,lang=Lang,format=Form,
+        value=Value,onSelect=SelectFn,disableDayFn=DisDayFn,
+        position=Pos,reposition=Repos,yearRange=YearRange} = Calendar) ->
     ID = nitro:to_list(Id),
-    I18n =        case Lang  of []  -> "clLangs.ua"; Lang -> "clLangs."++nitro:to_list(Lang) end,
-    Format =      case Form  of []  -> "YYYY-MM-DD"; Form -> Form end,
-    DefaultDate = case Value of {Yv,Mv,Dv} -> nitro:f("new Date(~s,~s,~s)",[nitro:to_list(Yv),nitro:to_list(Mv-1),nitro:to_list(Dv)]);  _ -> "null" end,
-    MinDate =     case Min   of {Y,M,D}    -> nitro:f("new Date(~s,~s,~s)",[nitro:to_list(Y), nitro:to_list(M-1), nitro:to_list(D)]);   _ -> "new Date(2000, 0, 1)" end,
-    MaxDate =     case Max   of {Y1,M1,D1} -> nitro:f("new Date(~s,~s,~s)",[nitro:to_list(Y1),nitro:to_list(M1-1),nitro:to_list(D1)]);  _ -> "new Date(2087, 4, 13)" end,
-    OnSelect =    case SelectFn of [] -> "null"; _ -> SelectFn end,
-    DisDay =      case DisDayFn of [] -> "null"; _ -> nitro:f("function(thisDate){return ~s(thisDate);}",[DisDayFn]) end,
-    Position =    case Pos of [] -> "bottom left"; _ -> nitro:to_list(Pos) end,
-    Reposition =  case Repos of [] -> "true"; _ -> nitro:to_list(Repos) end,
+    I18n =        "clLangs.ua",
+    Format =      "YYYY-MM-DD",
+    DefaultDate = case Value of
+       {Yv,Mv,Dv} -> nitro:f("new Date(~s,~s,~s)",[nitro:to_list(Yv),nitro:to_list(Mv-1),nitro:to_list(Dv)]);
+        _ -> "new Date(2019, 11, 26)" end,
+    MinDate =     case Min   of {Y,M,D}    -> nitro:f("new Date(~s,~s,~s)",[nitro:to_list(Y), nitro:to_list(M-1), nitro:to_list(D)]);   _ -> "new Date(2009, 3, 4)" end,
+    MaxDate =     case Max   of {Y1,M1,D1} -> nitro:f("new Date(~s,~s,~s)",[nitro:to_list(Y1),nitro:to_list(M1-1),nitro:to_list(D1)]);  _ -> "new Date(2189, 4, 1)" end,
+    OnSelect =    "null",
+    DisDay =      "null",
+    Position =    "bottom left",
+    Reposition =  "true",
     nitro:wire(nitro:f(
         "pickers['~s'] = new Pikaday({
             field: document.getElementById('~s'),
-            firstDay: 1,
+            firstDay: 0,
             i18n: ~s,
             defaultDate: ~s,
-            setDefaultDate: true,
+            setDefaultDate: false,
             minDate: ~s,
             maxDate: ~s,
             format: '~s',
@@ -78,5 +82,7 @@ init(Id,#calendar{minDate=Min,maxDate=Max,lang=Lang,format=Form,value=Value,onSe
             reposition: ~s,
             yearRange: ~s
         });",
-        [ID,ID,I18n,DefaultDate,MinDate,MaxDate,Format,OnSelect,DisDay,Position,Reposition,nitro:to_list(YearRange)]
+        [ID,ID,I18n,DefaultDate,MinDate,MaxDate,Format,OnSelect,DisDay,
+         Position,Reposition,nitro:to_list(YearRange)]
     )).
+

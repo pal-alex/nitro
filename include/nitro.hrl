@@ -10,7 +10,7 @@
 -define(ELEMENT_BASE(Module), ?ELEMENT_BASE(Module,[],[])).
 -define(ELEMENT_BASE(Module,Tag,Delegate),
         ancestor=element, id=[], module=Module, delegate=Delegate, validation=[],
-        validate=[], actions=[], class=[], style=[], source=[], onmouseover=[],
+        validate=[], actions=[], class=[], style=[], source=[], onmouseover=[], onmouseout=[],
         onkeypress=[], onchange=[], onkeyup=[], onkeydown=[], onclick=[],
         data_fields=[], aria_states=[], body=[], role=[], tabindex=[], show_if=true,
         html_tag=Tag, title=[], postback=[], accesskey=[], contenteditable=[],
@@ -21,7 +21,7 @@
 -define(ACTION_BASE(Module), ancestor=action, trigger=[], target=[], module=Module, actions=[], source=[]).
 -define(CTRL_BASE(Module), ?ELEMENT_BASE(Module,[],Module)).
 
--record(element, {?ELEMENT_BASE(undefined)}).
+-record(element, {?ELEMENT_BASE([])}).
 -record(literal, {?ELEMENT_BASE(element_literal), html_encode=true }).
 -record(dtl, {?ELEMENT_BASE(element_dtl), file="index", bindings=[], app=web, folder="priv/templates", ext="html", bind_script=true, js_escape=false }).
 -record(list, {?ELEMENT_BASE(element_list), numbered=false }).
@@ -72,7 +72,7 @@
 -record(textarea,       {?ELEMENT_BASE(element_textarea), autofocus=[], cols=[], dirname=[], disabled=[], form=[], maxlength, name, placeholder, readonly=[], required=[], rows=[], wrap=[], value=[]}).
 
 % HTML Form inputs
--record(input,       {?ELEMENT_BASE(element_input), required, autofocus, disabled, form, name, value, type=[], placeholder, multiple, min, max, pattern, accept}).
+-record(input,       {?ELEMENT_BASE(element_input), required, autofocus, disabled, form, name, value, type=[], checked=false, placeholder, multiple, min, max, pattern, accept}).
 -record(input_button,       {?ELEMENT_BASE(element_input_button),  autofocus, disabled, form, name, value}).
 -record(checkbox,           {?ELEMENT_BASE(element_checkbox),  autofocus, checked=false, disabled, form, name, required, value}).
 -record(color,           {?ELEMENT_BASE(element_color),  autocomplete, autofocus, disabled, form, list, name, value}).
