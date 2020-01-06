@@ -10,7 +10,7 @@
 -define(ELEMENT_BASE(Module), ?ELEMENT_BASE(Module,[],[])).
 -define(ELEMENT_BASE(Module,Tag,Delegate),
         ancestor=element, id=[], module=Module, delegate=Delegate, validation=[],
-        validate=[], actions=[], class=[], style=[], source=[], onmouseover=[], onmouseout=[],
+        validate=[], actions=[], class=[], style=[], source=[], onmouseover=[], onmouseout=[], onmousemove=[], 
         onkeypress=[], onchange=[], onkeyup=[], onkeydown=[], onclick=[],
         data_fields=[], aria_states=[], body=[], role=[], tabindex=[], show_if=true,
         html_tag=Tag, title=[], postback=[], accesskey=[], contenteditable=[],
@@ -104,7 +104,7 @@
 -record(week,              {?ELEMENT_BASE(element_week),  autocomplete, autofocus, disabled, form, list, max, min, name, readonly, required, step, value}).
 
 % comboLookup
--record(comboKeyup,  { value=[], dom=[], feed=[], delegate=[]}).
+-record(comboKeyPress,  { value=[], dom=[], feed=[], delegate=[]}).
 -record(comboSelect,  { value=[], dom=[], feed=[], delegate=[] }).
 -record(comboNext,   { pos=[],  count=[], feed=[]}).
 -record(comboLookup, { ?ELEMENT_BASE(element_comboLookup),

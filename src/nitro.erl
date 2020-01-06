@@ -230,3 +230,9 @@ cookie(Id, Value, Expire) ->
 
 cookies() -> cowboy_req:parse_cookies((get(context))#cx.req).
 cookie(Key) -> case lists:keyfind(Key, 1, cowboy_req:parse_cookies((get(context))#cx.req)) of false -> undefined; {_, Value} -> Value end.
+
+join(List, Delim) when is_list(List) -> 
+    NewList = [ nitro:to_list(L) || L <- List],
+    string:join(NewList, Delim).
+atom(List) when is_list(List) -> join(List, "__");
+atom(Scalar) -> nitro:to_list(Scalar).
