@@ -183,7 +183,11 @@ state(Key,Value) -> erlang:put(Key,Value).
 
 redirect({http,Url}) -> n2o:header(<<"Location">>,nitro_conv:to_binary(Url)), nitro:state(status,302), [];
 redirect(Url) -> nitro:wire(#jq{target='window.top',property=location,args=simple,right=Url}).
+blank(Url) -> Command = nitro:f("window.open('~s', '_blank');", [Url]),
+            %   io_lib:format("blank url: ~s~n", [Command]),
+              nitro:wire(Command).
 %header(K,V) -> nitro:context((?CTX)#cx{req=cowboy_req:set_resp_header(K,V,?CTX#cx.req)}).
+
 
 % Convert and Utils API
 setAttr(Element, Attr, Value) -> 

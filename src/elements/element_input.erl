@@ -38,6 +38,7 @@ render_element(Record) ->
       {<<"name">>,Record#input.name},
       {<<"type">>, Record#input.type},
       {<<"accept">>, Record#input.accept},
+      {<<"autocomplete">>, "off"},
       {<<"max">>, Record#input.max},
       {<<"checked">>, if Record#input.checked == true -> true; true -> [] end},
       {<<"aria-states">>, Record#input.aria_states},
