@@ -169,7 +169,7 @@ insert_before(Target, Elements) -> insert_adjacent(beforebegin,Target, Elements)
 insert_after(Target, Elements) -> insert_adjacent(afterend,Target, Elements).
 
 clear(Target) ->
-    nitro:wire("var x = qi('"++nitro:to_list(Target)++"'); while (x.firstChild) x.removeChild(x.firstChild);").
+    nitro:wire("var x = qi('"++nitro:to_list(Target)++"'); if (x) {while (x.firstChild) x.removeChild(x.firstChild);}").
 
 remove(Target) ->
     nitro:wire("var x=qi('"++nitro:to_list(Target)++"'); x && x.parentNode.removeChild(x);").

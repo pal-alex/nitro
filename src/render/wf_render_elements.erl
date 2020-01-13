@@ -15,10 +15,9 @@ render_element(Element) when is_tuple(Element) ->
     case element(#element.validation,Element) of
          [] -> skip;
          Code ->
-         nitro:wire(nitro:f("{var name='~s'; qi(name)"
-           ".addEventListener('validation',"
-              "function(e) { if (!(~s)) e.preventDefault(); });"
-              "qi(name).validation = true;}",[Id,Code])) end,
+         nitro:wire(nitro:f("{var name='~s'; qi(name).addEventListener('validation',"
+                                "function(e) { if (!(~s)) e.preventDefault(); });"
+                                "qi(name).validation = true;}",[Id,Code])) end,
     case element(#element.module,Element) of
         [] -> default_render(Tag, Element);
         undefined -> default_render(Tag, Element);
@@ -29,6 +28,7 @@ default_render(Tag, Record) ->
     wf_tags:emit_tag(Tag, nitro:render(lists:flatten([element(#element.body,Record)])),
         lists:append([
            [{<<"id">>,              element(#element.id, Record)},
+            {<<"data-bind">>,       element(#element.bind, Record)},
             {<<"class">>,           element(#element.class, Record)},
             {<<"style">>,           element(#element.style, Record)},
             {<<"title">>,           element(#element.title, Record)},
@@ -46,6 +46,7 @@ default_render(Tag, Record) ->
             {<<"tabindex">>,        element(#element.tabindex, Record)},
             {<<"onmouseout">>,      element(#element.onmouseout, Record)},
             {<<"onmouseover">>,     element(#element.onmouseover, Record)},
+            {<<"onmousemove">>,     element(#element.onmousemove, Record)},
             {<<"role">>,            element(#element.role, Record)}],
         element(#element.data_fields, Record),
         element(#element.aria_states, Record)])).
