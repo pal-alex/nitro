@@ -78,6 +78,7 @@ depickle(SerializedData) -> ?PICKLER:depickle(SerializedData).
 depickle(SerializedData, TTLSeconds) -> ?PICKLER:depickle(SerializedData, TTLSeconds).
 
 render(X) -> wf_render:render(X).
+wire([]) -> skip;
 wire(Actions) -> action_wire:wire(Actions).
 
 unique_integer() -> erlang:unique_integer().

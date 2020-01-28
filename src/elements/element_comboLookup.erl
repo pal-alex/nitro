@@ -21,7 +21,7 @@ render_element(#comboLookup{id=Id, style=Style, value = Val, bind = Object0,
                                                                ++ nitro:to_list(Id) ++ "','"
                                                                ++ nitro:to_list(Feed) ++ "','"
                                                                ++ nitro:to_list(Module) ++ "')"),
-                                                        bind = Object, value = Val, style = Style, class = column},
+                                                        bind = Object, value = Val, style = Style},
                                                  #button{class = comboButton, 
                                                         postback={combo_open, nitro:to_list(Module)},
                                                         source=[Id], 
