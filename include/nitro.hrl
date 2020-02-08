@@ -113,6 +113,9 @@
     feed=[],
     reader=[],
     chunk=20 }).
+-record(comboLookupVec, {?ELEMENT_BASE(element_comboLookupVec), input, disabled, values}).
+-record(sortable_item, {?ELEMENT_BASE(element_sortable_item), list_id, value, closeable, disabled}).
+-record(sortable_list, {?ELEMENT_BASE(element_sortable_list), values, closeable, disabled}).
 
 % HTML Interactive
 -record(command,       {?ELEMENT_BASE(element_command),  checked, disabled, icon, label, radiogroup, type= <<"command">>}).
