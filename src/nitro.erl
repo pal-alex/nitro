@@ -129,10 +129,7 @@ update(Target, Elements) ->
     nitro:wire(#jq{target=Target,property=outerHTML,right=Elements,format="'~s'"}).
 
 insert_top(Tag,Target, Elements) ->
-    Pid = self(),
-    Ref = make_ref(),
-    spawn(fun() -> R = nitro:render(Elements), Pid ! {R,Ref,nitro:actions()} end),
-    {Render,Ref,Actions} = receive {_, Ref, _} = A -> A end,
+    {Render,Ref,Actions} = render_html(Elements),
     nitro:wire(nitro:f(
         "qi('~s').insertBefore("
         "(function(){var div = qn('~s'); div.innerHTML = '~s'; return div.firstChild; })(),"
@@ -141,10 +138,7 @@ insert_top(Tag,Target, Elements) ->
     nitro:wire(nitro:render(Actions)).
 
 insert_bottom(Tag, Target, Elements) ->
-    Pid = self(),
-    Ref = make_ref(),
-    spawn(fun() -> R = nitro:render(Elements), Pid ! {R,Ref,nitro:actions()} end),
-    {Render,Ref,Actions} = receive {_, Ref, _} = A -> A end,
+    {Render,Ref,Actions} = render_html(Elements),
     nitro:wire(nitro:f(
         "(function(){ var div = qn('~s'); div.innerHTML = '~s';"
                      "qi('~s').appendChild(div.firstChild); })();",
@@ -152,12 +146,17 @@ insert_bottom(Tag, Target, Elements) ->
     nitro:wire(nitro:render(Actions)).
 
 insert_adjacent(Command,Target, Elements) ->
+    {Render,Ref,Actions} = render_html(Elements),
+    nitro:wire(nitro:f("qi('~s').insertAdjacentHTML('~s', '~s');",[Target,Command,Render])),
+    nitro:wire(nitro:render(Actions)).
+
+render_html(Elements) ->
     Pid = self(),
     Ref = make_ref(),
     spawn(fun() -> R = nitro:render(Elements), Pid ! {R,Ref,nitro:actions()} end),
     {Render,Ref,Actions} = receive {_, Ref, _} = A -> A end,
-    nitro:wire(nitro:f("qi('~s').insertAdjacentHTML('~s', '~s');",[Target,Command,Render])),
-    nitro:wire(nitro:render(Actions)).
+    {Render,Ref,Actions}
+.
 
 actions() -> get(actions).
 actions(Ac) -> put(actions,Ac).

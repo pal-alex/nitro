@@ -51,6 +51,8 @@ render_element(Record) ->
       {<<"onkeypress">>, Record#input.onkeypress},
       {<<"onkeyup">>, Record#input.onkeyup},
       {<<"onkeydown">>, Record#input.onkeydown},
+      {<<"onfocus">>, Record#input.onfocus},
+      {<<"onblur">>, Record#input.onblur},
       {<<"onclick">>, Record#input.onclick},
       {<<"required">>, if Record#input.required == true -> "required"; true -> [] end},
       {<<"onchange">>, Record#input.onchange} | Record#input.data_fields

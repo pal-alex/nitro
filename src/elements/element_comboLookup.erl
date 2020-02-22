@@ -13,6 +13,7 @@ render_element(#comboLookup{id=Id, style=Style, value = Val, bind = Object0,
                      _ -> base64:encode(term_to_binary(Object0))
                 end,
        nitro:render([#panel{class = comboBox, body= [#input{id=Id, disabled = Disabled, type="text",
+                                                        onfocus = "this.select();",
                                                         onkeyup = nitro:jse("comboLookupKeyup('"
                                                                ++ nitro:to_list(Id) ++ "','"
                                                                ++ nitro:to_list(Feed) ++ "','"
