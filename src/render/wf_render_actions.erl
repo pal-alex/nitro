@@ -3,9 +3,10 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 render_action(Action) ->
-    Module = element(#action.module,Action),
+    Module = element(#action.module, Action),
     Res = Module:render_action(Action),
     case Res of
          Res when is_tuple(Res) -> render_action(Res);

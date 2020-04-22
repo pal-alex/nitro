@@ -2,6 +2,7 @@
 -description('NITRO Static bridge for MAD containers').
 -author('Maxim Sokhatsky').
 -compile(export_all).
+-compile(nowarn_export_all).
 -include_lib("kernel/include/file.hrl").
 
 init(_, _, _) -> {upgrade, protocol, cowboy_rest}.

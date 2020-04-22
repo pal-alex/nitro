@@ -2,6 +2,7 @@
 -author('Maxim Sokhatsky').
 -include_lib("nitro/include/nitro.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 -define(VOID(Tag),  (Tag == <<"br">>     orelse Tag == <<"hr">>
               orelse Tag == <<"link">>   orelse Tag == <<"img">>
               orelse Tag == <<"input">>  orelse Tag == <<"link">>
@@ -27,3 +28,4 @@ display_property({Prop, Value}) -> [<<" ">>, nitro:to_binary(Prop), <<"=\"">>, n
 prop({Id, Value}) when is_atom(Value) -> [<<" ">>,Id,<<"=\"">>, nitro:to_binary(Value), <<"\"">>];
 prop({Id, Value}) when is_binary(Value) -> [<<" ">>,Id,<<"=\"">>, Value, <<"\"">>];
 prop({Id, Value}) -> [<<" ">>,Id,<<"=\"">>, string:join([nitro:to_list(V) || V <-Value ]," "), <<"\"">>].
+

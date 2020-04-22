@@ -3,6 +3,7 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 -define(T(T), wf_event:target(T)).
 

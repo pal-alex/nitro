@@ -2,6 +2,7 @@
 -author('Rusty Klophaus').
 -include_lib("nitro/include/nitro.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 render_element(Record) when Record#legend.show_if==false -> [<<>>];
 render_element(Record) -> 

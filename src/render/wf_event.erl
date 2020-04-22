@@ -4,6 +4,7 @@
 -include_lib("nitro/include/cx.hrl").
 -include_lib("nitro/include/nitro.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 -record(ev,      { module, msg, trigger, name }).
 
@@ -12,11 +13,11 @@
 target({qs,S}) -> ["qs('",nitro:js_escape(?L(S)), "')"];
 target(Id)     -> ["qi('",nitro:js_escape(?L(Id)),"')"].
 
-new(P,E,D,N,Data,Source) -> new(P,E,D,N,Data,Source,<<>>).
+new(P,E,D,N,Data,Source) -> new(P, E, D, N, Data, Source, []).
 
-new(bin,Data) -> <<"ws.send(enc(tuple(atom('bin'),bin('",(nitro:pickle(Data))/binary,"'))));">>.
-new([], _, _, _, _, _, _) -> <<>>;
-new(undefined, _, _, _, _, _, _) -> <<>>;
+new(bin,Data) -> "ws.send(enc(tuple(atom('bin'),bin('",(nitro:pickle(Data))/binary,"'))));".
+new([], _, _, _, _, _, _) -> [];
+new(undefined, _, _, _, _, _, _) -> [];
 new(Postback, Element, Delegate, Name, Data, Source, Validation) ->
     Module = nitro:coalesce([Delegate, ?CTX#cx.module]),
     Join=fun([]) -> [];
@@ -24,13 +25,13 @@ new(Postback, Element, Delegate, Name, Data, Source, Validation) ->
          ([H|T]) -> [[$'|H]++[$']] ++ [ [$,,$'|E]++[$'] || E <- T ] end,
     Event = #ev{name=Name, module=Module, msg=Postback, trigger=Element}, 
     ValidateSources = Join([ nitro:to_list(S) || S <- Source, S =/= [] andalso is_tuple(S) == false ]),
-    list_to_binary(["{ if (validateSources([", ValidateSources, "])) 
+    ["{ if (validateSources([", ValidateSources, "])) 
       { ",?B(Validation)," m = enc(tuple(atom('",?B(application:get_env(n2o,event,pickle)),"'),
                                         bin('", Element, "'),
                                         bin('", nitro:pickle(Event), "'),
                                         ", Data, "));
                            ws.send(m); } 
-                      else console.log('Validation Error'); }"]).
+                      else console.log('Validation Error'); }"].
 
 
   % new(Postback, Element, Delegate, Name, Data, Source, Validation) ->

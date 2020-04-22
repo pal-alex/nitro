@@ -2,20 +2,13 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 render_element(Record) when Record#input.show_if==false -> [<<>>];
 render_element(Record) ->
-    Id = case Record#input.postback of
-        [] -> Record#input.id;
-        undefined -> Record#input.id;
-        Postback ->
-          ID = case Record#input.id of
-            [] -> nitro:temp_id();
-            I -> I end,
-          nitro:wire(#event{type=click, postback=Postback, target=ID,
-                  source=Record#input.source, delegate=Record#input.delegate }),
-          ID end,
-    List = [
+  {Id, Body, Actions} = wf_render_elements:iba(Record),
+
+  List = [
       %global
       {<<"accesskey">>, Record#input.accesskey},
       {<<"class">>, Record#input.class},
@@ -58,4 +51,6 @@ render_element(Record) ->
       {<<"required">>, if Record#input.required == true -> "required"; true -> [] end},
       {<<"onchange">>, Record#input.onchange} | Record#input.data_fields
     ],
-    wf_tags:emit_tag(<<"input">>, nitro:render(Record#input.body), List).
+    Render = wf_tags:emit_tag(<<"input">>, Body, List),
+    {Render, Actions}
+    .

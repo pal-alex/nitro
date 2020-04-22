@@ -4,16 +4,19 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 -define(B(E), nitro:to_binary(E)).
 
 render_action(#event{source=undefined}) -> [];
 render_action(#event{postback=Postback,actions=_A,source=Source,target=Control,type=Type,delegate=D,validation=V}) ->
-    E = ?B(Control),
+    E = Control,
     ValidationSource = [ S || S <- Source, not is_tuple(S) ],
-    PostbackBin = wf_event:new(Postback, E, D, event, data(E,Source), ValidationSource, V),
-    ["{var x=qi('",E,"'); x && x.addEventListener('",?B(Type),
-     "',function (event){ event.preventDefault(); ",PostbackBin,"});};"].
-
+    PB = wf_event:new(Postback, E, D, event, data(E, Source), ValidationSource, V),
+    Command = nitro:f("{var x=qi('~s'); x && x.addEventListener('~s',
+                        function (event){ event.preventDefault(); ~s});};", [E, Type, PB]),
+    % io:format("action_event:render_action: ~p~n", [Command]),
+    Command.
+    
 data(E,SourceList) ->
     Type=fun(A) when is_atom(A)   -> [ "atom('",atom_to_list(A),"')" ];
 		    (A) when is_binary(A) -> [ "bin('",binary_to_list(A),"')" ];

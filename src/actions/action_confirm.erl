@@ -3,6 +3,7 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 render_action(#confirm{target=Control,text=Text,postback=Postback,delegate=Delegate}) -> 
     PostbackScript = wf_event:new(Postback, Control, Delegate, event, "[]", []),

@@ -2,6 +2,7 @@
 -description('N2O Formatter: JSON, BERT').
 -author('Maxim Sokhatsky').
 -compile(export_all).
+-compile(nowarn_export_all).
 -include_lib("nitro/include/nitro.hrl").
 
 % WF to_atom to_list to_binary

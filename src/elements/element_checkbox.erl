@@ -3,15 +3,18 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 render_element(Record) when Record#checkbox.show_if==false -> [<<>>];
 render_element(Record) -> 
-    Id = case Record#checkbox.id of [] -> nitro:temp_id(); I->I end,
-    case Record#checkbox.postback of
-        [] -> ignore;
-        Postback -> nitro:wire(#event { type=change, postback=Postback, target=Id, source=Record#checkbox.source, delegate=Record#checkbox.delegate })
-    end,
-  wf_tags:emit_tag(<<"input">>, [], [
+    % Id = case Record#checkbox.id of [] -> nitro:temp_id(); I->I end,
+    % case Record#checkbox.postback of
+    %     [] -> ignore;
+    %     Postback -> nitro:wire(#event { type=change, postback=Postback, target=Id, source=Record#checkbox.source, delegate=Record#checkbox.delegate })
+    % end,
+    {Id, _, Actions} = wf_render_elements:iba(Record, change),
+
+    Render = wf_tags:emit_tag(<<"input">>, [], [
       % global
       {<<"accesskey">>, Record#checkbox.accesskey},
       {<<"class">>, Record#checkbox.class},
@@ -38,7 +41,9 @@ render_element(Record) ->
       {<<"required">>, if Record#checkbox.required == true -> "required"; true -> [] end},
       {<<"type">>, <<"checkbox">>},
       {<<"value">>, Record#checkbox.value} | Record#checkbox.data_fields
-      ]). 
+      ]),
+    {Render, Actions}  
+    . 
 
 
 render_element1(Record) -> 

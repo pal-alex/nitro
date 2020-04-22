@@ -2,6 +2,7 @@
 -author('Maxim Sokhatsky').
 -include("nitro.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 
 render_element(Record) when Record#dtl.show_if==false -> [<<>>];
 render_element(Record=#dtl{}) ->

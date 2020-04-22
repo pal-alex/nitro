@@ -3,6 +3,7 @@
 -include_lib("nitro/include/nitro.hrl").
 -include_lib("nitro/include/event.hrl").
 -compile(export_all).
+-compile(nowarn_export_all).
 -behaviour(application).
 -export([start/2, stop/1, init/1]).
 
@@ -65,9 +66,13 @@ to_binary(A) when is_atom(A) -> atom_to_binary(A,latin1);
 to_binary(B) when is_binary(B) -> B;
 to_binary(I) when is_integer(I) -> to_binary(integer_to_list(I));
 to_binary(F) when is_float(F) -> float_to_binary(F,[{decimals,9},compact]);
-to_binary(L) when is_list(L) -> L1 = lists:flatten(L),
+to_binary(L) when is_bitstring(L) -> iolist_to_binary(L);
+to_binary(L) when is_list(L) -> 
+                                % io:format("to_binary: ~p~n", [L]),
+                                L1 = lists:flatten(L),
                                 iolist_to_binary(L1);
 to_binary(X) when is_tuple(X) ->  term_to_binary(X).
+
 
 -ifndef(PICKLER).
 -define(PICKLER, (application:get_env(n2o,pickler,nitro_pickle))).
@@ -78,8 +83,12 @@ depickle(SerializedData) -> ?PICKLER:depickle(SerializedData).
 depickle(SerializedData, TTLSeconds) -> ?PICKLER:depickle(SerializedData, TTLSeconds).
 
 render(X) -> wf_render:render(X).
+render_action(X) -> wf_render:render_action(X).
 wire([]) -> skip;
-wire(Actions) -> action_wire:wire(Actions).
+wire(<<>>) -> skip;
+wire(Actions) -> 
+    % io:format("wire: ~p~n", [Actions]),
+    action_wire:wire(Actions).
 
 unique_integer() -> erlang:unique_integer().
 temp_id() -> "auto" ++ integer_to_list(unique_integer() rem 1000000).
@@ -120,56 +129,88 @@ html_encode_whites([H|T]) ->
         _ -> [H|html_encode_whites(T)]
     end.
 
+% DICT
+
+% DICT
+put(actions, Actions) -> actions(Actions);
+put(Key, Value) -> erlang:put(Key, Value).
+
+% put(Key, Value) -> nitro:put(Key, Value, true).
+% put(Key, Value, true) -> 
+%     erlang:put(Key, Value),
+%     nitro:put(Key, Value, false);
+% put(actions, Actions, false) ->
+%     n2o:send({nitro, actions}, {flush, Actions});
+% put(Key, Value, false) ->
+%     n2o:send({nitro, Key}, Value).
+    
+
 script() -> get(script).
-script(Script) -> put(script,Script).
+script(Script) -> nitro:put(script,Script).
 
 % Update DOM nitro:update
 
 update(Target, Elements) ->
     nitro:wire(#jq{target=Target,property=outerHTML,right=Elements,format="'~s'"}).
 
-insert_top(Tag,Target, Elements) ->
-    {Render,Ref,Actions} = render_html(Elements),
-    nitro:wire(nitro:f(
-        "qi('~s').insertBefore("
-        "(function(){var div = qn('~s'); div.innerHTML = '~s'; return div.firstChild; })(),"
-        "qi('~s').firstChild);",
-        [Target,Tag,Render,Target])),
-    nitro:wire(nitro:render(Actions)).
+% insert_top(Tag,Target, Elements) ->
+%     {Render,Ref,Actions} = render_html(Elements),
+%     nitro:wire(nitro:f(
+%         "qi('~s').insertBefore("
+%         "(function(){var div = qn('~s'); div.innerHTML = '~s'; return div.firstChild; })(),"
+%         "qi('~s').firstChild);",
+%         [Target,Tag,Render,Target])),
+%     nitro:wire(nitro:render(Actions)).
 
-insert_bottom(Tag, Target, Elements) ->
-    {Render,Ref,Actions} = render_html(Elements),
-    nitro:wire(nitro:f(
-        "(function(){ var div = qn('~s'); div.innerHTML = '~s';"
-                     "qi('~s').appendChild(div.firstChild); })();",
-        [Tag,Render,Target])),
-    nitro:wire(nitro:render(Actions)).
+% insert_bottom(Tag, Target, Elements) ->
+%     {Render,Ref,Actions} = render_html(Elements),
+%     nitro:wire(nitro:f(
+%         "(function(){ var div = qn('~s'); div.innerHTML = '~s';"
+%                      "qi('~s').appendChild(div.firstChild); })();",
+%         [Tag,Render,Target])),
+%     nitro:wire(nitro:render(Actions)).
 
-insert_adjacent(Command,Target, Elements) ->
-    {Render,Ref,Actions} = render_html(Elements),
-    nitro:wire(nitro:f("qi('~s').insertAdjacentHTML('~s', '~s');",[Target,Command,Render])),
-    nitro:wire(nitro:render(Actions)).
+insert_adjacent(Command, Target, Elements) -> insert_adjacent(Command, Target, Elements, "qi").
+insert_adjacent(Command, Target, Elements, Q) ->
+    {Render, _Ref, Actions} = render_html(Elements),
+    nitro:wire(nitro:f("~s('~s').insertAdjacentHTML('~s', '~s'); ~s",[Q,Target,Command,Render,Actions]))
+.
+insert_top(Target, Elements) -> insert_adjacent(afterbegin, Target, Elements).
+insert_bottom(Target, Elements) -> insert_adjacent(beforeend, Target, Elements).
+insert_before(Target, Elements) -> insert_adjacent(beforebegin, Target, Elements).
+insert_after(Target, Elements) -> insert_adjacent(afterend, Target, Elements).
 
 render_html(Elements) ->
     Pid = self(),
     Ref = make_ref(),
-    spawn(fun() -> R = nitro:render(Elements), Pid ! {R,Ref,nitro:actions()} end),
-    {Render,Ref,Actions} = receive {_, Ref, _} = A -> A end,
-    {Render,Ref,Actions}
+    Ctx = get(context),
+    spawn(fun() -> erlang:put(context, Ctx),
+                   {R, A} = nitro:render(Elements), 
+                   Pid ! {R, Ref, A}
+          end),
+    {Render, Ref, Actions} = receive {_, Ref, _} = A -> A end,
+    {Render, Ref, Actions}
 .
 
-actions() -> get(actions).
-actions(Ac) -> put(actions,Ac).
+% actions() -> get(actions).
+actions(Actions) -> 
+    % io:format("changing actions! ~p~n", [Ac]),
+    % nitro:put(actions,Ac).
+    State = erlang:get(context),
+    Pid = n2o_cowboy2:pid(State),
+    % io:format("actions: ~p~n", [{Pid, Actions}]),
+    n2o_ws:to_client(Pid, {flush, Actions}).
+    % n2o:send(ClientPid, {flush, Actions}).
 
-insert_top(Target, Elements) when element(1,Elements) == tr -> insert_top(tbody,Target, Elements);
-insert_top(Target, Elements) -> insert_top('div',Target, Elements).
-insert_bottom(Target, Elements) when element(1,Elements) == tr -> insert_bottom(tbody, Target, Elements);
-insert_bottom(Target, Elements) -> insert_bottom('div', Target, Elements).
-insert_before(Target, Elements) -> insert_adjacent(beforebegin,Target, Elements).
-insert_after(Target, Elements) -> insert_adjacent(afterend,Target, Elements).
+
+% insert_top(Target, Elements) when element(1,Elements) == tr -> insert_top(tbody,Target, Elements);
+% insert_top(Target, Elements) -> insert_top('div',Target, Elements).
+% insert_bottom(Target, Elements) when element(1,Elements) == tr -> insert_bottom(tbody, Target, Elements);
+% insert_bottom(Target, Elements) -> insert_bottom('div', Target, Elements).
+
 
 clear(Target) ->
-    nitro:wire("var x = qi('"++nitro:to_list(Target)++"'); if (x) {while (x.firstChild) x.removeChild(x.firstChild);}").
+    nitro:wire(nitro:f("var x = qi('~s'); if (x) {while (x.firstChild) x.removeChild(x.firstChild);}", [Target])).
 
 remove(Target) ->
     nitro:wire("var x=qi('"++nitro:to_list(Target)++"'); x && x.parentNode.removeChild(x);").
@@ -177,7 +218,7 @@ remove(Target) ->
 % Wire JavaScript nitro:wire
 
 state(Key) -> erlang:get(Key).
-state(Key,Value) -> erlang:put(Key,Value).
+state(Key,Value) -> nitro:put(Key,Value).
 
 % Redirect and purge connection nitro:redirect
 
