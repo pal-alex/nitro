@@ -90,6 +90,17 @@ wire(Actions) ->
     % io:format("wire: ~p~n", [Actions]),
     action_wire:wire(Actions).
 
+mqtt_wire(App, Topic, Command) when is_atom(App) ->
+    Pid = n2o_pi:pid(mqtt, App),
+    mqtt_wire(Pid, Topic, Command);
+
+mqtt_wire(Pid, Topic, Command) ->
+    Io = {io, Command, nitro:to_binary(Command)},
+    Message = n2o_bert:encode(Io),
+    n2o_pi:send(Pid, {send, Topic, Message})
+.
+
+
 unique_integer() -> erlang:unique_integer().
 temp_id() -> "auto" ++ integer_to_list(unique_integer() rem 1000000).
 
