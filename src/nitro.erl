@@ -162,13 +162,13 @@ script(Script) -> nitro:put(script,Script).
 % Update DOM nitro:update
 
 update(Target, Elements) ->
-    nitro:wire(#jq{target=Target,property=outerHTML,right=Elements,format="'~s'"}).
+    nitro:wire(#jq{target=Target,property=outerHTML,right=Elements,format="`~s`"}).
 
 % insert_top(Tag,Target, Elements) ->
 %     {Render,Ref,Actions} = render_html(Elements),
 %     nitro:wire(nitro:f(
 %         "qi('~s').insertBefore("
-%         "(function(){var div = qn('~s'); div.innerHTML = '~s'; return div.firstChild; })(),"
+%         "(function(){var div = qn('~s'); div.innerHTML = `~s`; return div.firstChild; })(),"
 %         "qi('~s').firstChild);",
 %         [Target,Tag,Render,Target])),
 %     nitro:wire(nitro:render(Actions)).
@@ -176,7 +176,7 @@ update(Target, Elements) ->
 % insert_bottom(Tag, Target, Elements) ->
 %     {Render,Ref,Actions} = render_html(Elements),
 %     nitro:wire(nitro:f(
-%         "(function(){ var div = qn('~s'); div.innerHTML = '~s';"
+%         "(function(){ var div = qn('~s'); div.innerHTML = `~s`;"
 %                      "qi('~s').appendChild(div.firstChild); })();",
 %         [Tag,Render,Target])),
 %     nitro:wire(nitro:render(Actions)).
@@ -184,7 +184,7 @@ update(Target, Elements) ->
 insert_adjacent(Command, Target, Elements) -> insert_adjacent(Command, Target, Elements, "qi").
 insert_adjacent(Command, Target, Elements, Q) ->
     {Render, _Ref, Actions} = render_html(Elements),
-    nitro:wire(nitro:f("~s('~s').insertAdjacentHTML('~s', '~s'); ~s",[Q,Target,Command,Render,Actions]))
+    nitro:wire(nitro:f("~s('~s').insertAdjacentHTML('~s', `~s`); ~s",[Q,Target,Command,Render,Actions]))
 .
 insert_top(Target, Elements) -> insert_adjacent(afterbegin, Target, Elements).
 insert_bottom(Target, Elements) -> insert_adjacent(beforeend, Target, Elements).

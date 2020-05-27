@@ -89,7 +89,7 @@ iba(Record, Type) ->
                             ID1 = case ID0 of [] -> nitro:temp_id(); I -> I end,
                             Event = #event{type=Type, postback=Postback, target=ID1,
                                             source=Source, delegate=Delegate},  
-                            {ID0, nitro:render_action(Event)}
+                            {ID1, nitro:render_action(Event)}
                 end,
     {Body, Actions} = nitro:render(flatten(Body0)),
     {ID, Body, [P | Actions]}
