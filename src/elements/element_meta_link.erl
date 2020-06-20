@@ -8,6 +8,9 @@ render_element(Record) when Record#meta_link.show_if==false -> [<<>>];
 render_element(Record) ->
     List = [
       %global
+      {<<"id">>, Record#meta_link.id},
+      {<<"rel">>,Record#meta_link.rel},
+      
       {<<"accesskey">>, Record#meta_link.accesskey},
       {<<"class">>, Record#meta_link.class},
       {<<"contenteditable">>, case Record#meta_link.contenteditable of true -> "true"; false -> "false"; _ -> [] end},
@@ -16,7 +19,7 @@ render_element(Record) ->
       {<<"draggable">>, case Record#meta_link.draggable of true -> "true"; false -> "false"; _ -> [] end},
       {<<"dropzone">>, Record#meta_link.dropzone},
       {<<"hidden">>, case Record#meta_link.hidden of "hidden" -> "hidden"; _ -> [] end},
-      {<<"id">>, Record#meta_link.id},
+      
       {<<"lang">>, Record#meta_link.lang},
       {<<"spellcheck">>, case Record#meta_link.spellcheck of true -> "true"; false -> "false"; _ -> [] end},
       {<<"style">>, Record#meta_link.style},
@@ -27,8 +30,10 @@ render_element(Record) ->
       {<<"href">>,Record#meta_link.href},
       {<<"hreflang">>,Record#meta_link.hreflang},
       {<<"media">>,Record#meta_link.media},
-      {<<"rel">>,Record#meta_link.rel},
+      
       {<<"sizes">>,Record#meta_link.sizes},
       {<<"type">>,Record#meta_link.type} | Record#meta_link.data_fields
     ],
-    wf_tags:emit_tag(<<"link">>, List).
+    Render = wf_tags:emit_tag(<<"link">>, List),
+    {Render, []}
+    .
